@@ -2,11 +2,13 @@ import express from 'express';
 import bodyParser from 'body-parser';
 import { MongoClient } from 'mongodb';
 import path from 'path';
+import history from 'connect-history-api-fallback';
 
 const app = express();
 app.use(bodyParser.json());
-
 app.use('/images', express.static(path.join(__dirname, '../assets')));
+app.use(express.static(path.resolve(__dirname, '../dist'), { maxAge: '1y', etag: false}));
+app.use(history());
 
 app.get('/api/products', async (req, res) => {
     const client = await MongoClient.connect(
@@ -86,6 +88,10 @@ app.delete('/api/users/:userId/cart/:productId', async (req, res) => {
     const cartItems = cartItemIds.map(id => products.find(product => product.id === id));
     res.status(200).json(cartItems);
     client.close();
+});
+
+app.get('*', (req, res) => {
+    res.sendFile(path.join(__dirname, '../dist/index.html'));
 });
 
 app.listen(8000, () => {
