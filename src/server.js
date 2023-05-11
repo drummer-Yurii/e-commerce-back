@@ -30,7 +30,7 @@ app.get('/api/users/:userId/cart', async (req, res) => {
     if (!user) return res.status(404).json('Could not find user!');
     const products = await db.collection('products').find({}).toArray();
     const cartItemIds = user.cartItems;
-    const cartItems = cartItemIds.map(id => products.find(product => products.id === id));
+    const cartItems = cartItemIds.map(id => products.find(product => product.id === id));
     res.status(200).json(cartItems);
     client.close();
 });
@@ -63,6 +63,7 @@ app.post('/api/users/:userId/cart', async (req, res) => {
         $addToSet: { cartItems: productId },
     });
     const user = await db.collection('users').findOne({ id: userId });
+    const products = await db.collection('products').find({}).toArray();
     const cartItemIds = user.cartItems;
     const cartItems = cartItemIds.map(id => products.find(product => product.id === id));
     res.status(200).json(cartItems);
